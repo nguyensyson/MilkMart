@@ -8,12 +8,12 @@ Liên quan bảng: `roles`, `users`.
 
 | Chức năng | Mô tả | Actor | Input | Output |
 |---|---|---|---|---|
-| Đăng ký tài khoản | Khách hàng tạo tài khoản mới bằng email/số điện thoại | Khách hàng | Họ tên, email, mật khẩu, số điện thoại | Tài khoản mới (`users`, `role_id` = Customer), trạng thái `status` |
-| Đăng nhập | Xác thực tài khoản để truy cập hệ thống | Khách hàng, Admin, Staff | Email/mật khẩu | Phiên đăng nhập (session/token) |
+| Đăng ký tài khoản khách hàng | Khách hàng tự tạo tài khoản qua màn hình đăng ký công khai; hệ thống tự gán `role_id` = Customer | Khách hàng | Họ tên, email, mật khẩu, số điện thoại | Tài khoản mới (`users`, `role_id` = Customer), trạng thái `status` |
+| Tạo tài khoản quản trị/nhân viên | Admin tạo tài khoản cho Admin/Staff qua màn hình đăng ký riêng (nội bộ); hệ thống gán `role_id` tương ứng theo lựa chọn | Admin | Họ tên, email, mật khẩu, `role_id` (Admin/Staff) | Tài khoản mới (`users`, `role_id` = Admin/Staff) |
+| Đăng nhập | Xác thực tài khoản để truy cập hệ thống; trả về thông tin vai trò (role) trong dữ liệu phiên đăng nhập để phục vụ phân quyền phía client | Khách hàng, Admin, Staff | Email/mật khẩu | Phiên đăng nhập (session) kèm thông tin `role` |
 | Quản lý hồ sơ cá nhân | Xem/cập nhật thông tin cá nhân, địa chỉ nhận hàng | Khách hàng | Họ tên, số điện thoại, địa chỉ | Thông tin `users` được cập nhật |
-| Quản lý vai trò (roles) | Tạo/sửa các vai trò và mô tả quyền hạn | Admin | Tên vai trò, mô tả | Bản ghi `roles` |
-| Quản lý tài khoản người dùng | Xem danh sách, khóa/mở khóa tài khoản, gán vai trò | Admin | `user_id`, `role_id`, `status` | Trạng thái tài khoản cập nhật |
-| Phân quyền chức năng | Giới hạn thao tác theo vai trò (Customer/Admin/Staff) | Hệ thống | `role_id` của người dùng | Cho phép/từ chối truy cập chức năng |
+| Quản lý tài khoản người dùng | Xem danh sách, khóa/mở khóa tài khoản | Admin | `user_id`, `status` | Trạng thái tài khoản cập nhật |
+| Phân quyền chức năng | Giới hạn thao tác theo vai trò (Customer/Admin/Staff) đã được gán cố định lúc tạo tài khoản | Hệ thống | `role` trong phiên đăng nhập | Cho phép/từ chối truy cập chức năng |
 
 ## 2. Quản lý sản phẩm
 

@@ -6,10 +6,12 @@
 
 | Method | Path | Mô tả |
 |---|---|---|
-| GET | `/register` | Hiển thị trang đăng ký |
-| POST | `/register` | Xử lý đăng ký tài khoản mới |
+| GET | `/register` | Hiển thị trang đăng ký khách hàng (công khai); tài khoản tạo ra được gán `role_id` = Customer |
+| POST | `/register` | Xử lý đăng ký tài khoản khách hàng |
+| GET | `/admin/register` | (Admin) Hiển thị trang tạo tài khoản Admin/Staff (nội bộ) |
+| POST | `/admin/register` | (Admin) Xử lý tạo tài khoản Admin/Staff, gán `role_id` theo lựa chọn |
 | GET | `/login` | Hiển thị trang đăng nhập |
-| POST | `/login` | Xử lý đăng nhập |
+| POST | `/login` | Xử lý đăng nhập; phản hồi kèm thông tin `role` trong dữ liệu phiên đăng nhập để phân quyền phía client |
 | POST | `/logout` | Đăng xuất |
 | POST | `/forgot-password` | Gửi yêu cầu đặt lại mật khẩu |
 | POST | `/reset-password` | Đặt lại mật khẩu |
@@ -22,10 +24,7 @@
 | PUT | `/profile` | Cập nhật thông tin cá nhân, địa chỉ |
 | GET | `/admin/users` | (Admin) Danh sách người dùng |
 | GET | `/admin/users/{id}` | (Admin) Chi tiết người dùng |
-| PUT | `/admin/users/{id}` | (Admin) Cập nhật vai trò/trạng thái người dùng |
-| GET | `/admin/roles` | (Admin) Danh sách vai trò |
-| POST | `/admin/roles` | (Admin) Tạo vai trò mới |
-| PUT | `/admin/roles/{id}` | (Admin) Cập nhật vai trò |
+| PUT | `/admin/users/{id}/status` | (Admin) Khóa/mở khóa tài khoản người dùng |
 
 ## 3. Products (Sản phẩm) — Public
 
