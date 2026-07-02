@@ -1,5 +1,5 @@
 <script setup>
-import CustomerLayout from '@/Layouts/CustomerLayout.vue';
+import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { useForm } from '@inertiajs/vue3';
 
 const props = defineProps({
@@ -26,7 +26,7 @@ function submit() {
 </script>
 
 <template>
-    <CustomerLayout title="Tạo tài khoản nội bộ">
+    <AdminLayout title="Tạo tài khoản nội bộ">
         <form class="max-w-md space-y-4" @submit.prevent="submit">
             <div>
                 <label class="block text-sm font-medium text-gray-700">Họ tên</label>
@@ -96,5 +96,5 @@ function submit() {
                 Tạo tài khoản
             </button>
         </form>
-    </CustomerLayout>
+    </AdminLayout>
 </template>

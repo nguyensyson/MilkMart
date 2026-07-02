@@ -22,7 +22,9 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
         $request->session()->regenerate();
 
-        return redirect()->intended(route('home'));
+        $isBackoffice = in_array($request->user()->role?->name, ['Admin', 'Staff'], true);
+
+        return redirect()->intended($isBackoffice ? route('admin.dashboard') : route('home'));
     }
 
     public function destroy(Request $request): RedirectResponse

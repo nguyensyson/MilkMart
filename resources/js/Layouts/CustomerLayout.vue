@@ -25,9 +25,8 @@ const errorMessage = computed(() => page.props.flash?.error);
                     <Link href="/cart">Giỏ hàng</Link>
 
                     <template v-if="user">
-                        <Link v-if="user.role === 'Admin'" href="/admin/register">Tạo tài khoản nội bộ</Link>
                         <Link href="/invoices">Đơn hàng</Link>
-                        <span class="text-gray-400">{{ user.fullname || user.email }}</span>
+                        <Link href="/profile" class="text-gray-400 hover:text-emerald-600">{{ user.fullname || user.email }}</Link>
                         <Link href="/logout" method="post" as="button" class="text-gray-600 hover:text-emerald-600">
                             Đăng xuất
                         </Link>

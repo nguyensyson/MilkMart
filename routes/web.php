@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\PlaceholderController as AdminPlaceholderController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Auth\AdminRegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\NewPasswordController;
@@ -8,6 +11,7 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [ProductController::class, 'index'])->name('home');
@@ -34,7 +38,32 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
     ->middleware('auth')
     ->name('logout');
 
-Route::middleware(['auth', 'admin'])->group(function () {
-    Route::get('/admin/register', [AdminRegisteredUserController::class, 'create'])->name('admin.register');
-    Route::post('/admin/register', [AdminRegisteredUserController::class, 'store']);
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+});
+
+// Backoffice shell (Admin + Staff): dashboard plus the modules docs mark as
+// shared (Orders, Suppliers). Admin-only modules are nested below behind
+// the stricter 'admin' middleware.
+Route::middleware(['auth', 'backoffice'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('/orders', [AdminPlaceholderController::class, 'orders'])->name('orders.index');
+    Route::get('/suppliers', [AdminPlaceholderController::class, 'suppliers'])->name('suppliers.index');
+
+    Route::middleware('admin')->group(function () {
+        Route::get('/register', [AdminRegisteredUserController::class, 'create'])->name('register');
+        Route::post('/register', [AdminRegisteredUserController::class, 'store']);
+
+        Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+        Route::get('/users/{user}', [AdminUserController::class, 'show'])->name('users.show');
+        Route::put('/users/{user}/status', [AdminUserController::class, 'updateStatus'])->name('users.status');
+
+        Route::get('/products', [AdminPlaceholderController::class, 'products'])->name('products.index');
+        Route::get('/categories', [AdminPlaceholderController::class, 'categories'])->name('categories.index');
+        Route::get('/brands', [AdminPlaceholderController::class, 'brands'])->name('brands.index');
+        Route::get('/vouchers', [AdminPlaceholderController::class, 'vouchers'])->name('vouchers.index');
+        Route::get('/reports', [AdminPlaceholderController::class, 'reports'])->name('reports.index');
+    });
 });
