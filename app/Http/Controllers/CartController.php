@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Cart\ApplyVoucherRequest;
 use App\Http\Requests\Cart\StoreCartItemRequest;
 use App\Http\Requests\Cart\UpdateCartItemRequest;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\ProductVariant;
 use App\Services\CartService;
+use App\Services\VoucherService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -15,8 +17,10 @@ use Inertia\Response;
 
 class CartController extends Controller
 {
-    public function __construct(private readonly CartService $cartService)
-    {
+    public function __construct(
+        private readonly CartService $cartService,
+        private readonly VoucherService $voucherService,
+    ) {
     }
 
     public function show(Request $request): Response
@@ -54,6 +58,40 @@ class CartController extends Controller
         $item->delete();
 
         return back()->with('success', 'Đã xóa sản phẩm khỏi giỏ hàng.');
+    }
+
+    /**
+     * Preview-only: validates the voucher against the cart's current
+     * subtotal and returns the discount, but does not persist anything
+     * (usage is only recorded once the order is actually placed in
+     * OrderService::checkout, which re-validates the voucher itself).
+     */
+    public function applyVoucher(ApplyVoucherRequest $request): RedirectResponse
+    {
+        $cart = $this->cartService->getOrCreateCart($request->user());
+        $subtotal = $this->subtotal($cart);
+
+        if ($subtotal <= 0) {
+            return back()->withErrors(['voucher_code' => 'Giỏ hàng của bạn đang trống.']);
+        }
+
+        $voucher = $this->voucherService->findForApply($request->validated('voucher_code'), $subtotal);
+        $discount = $this->voucherService->calculateDiscount($voucher, $subtotal);
+
+        return back()->with('voucher', [
+            'code' => $voucher->code,
+            'discount_type' => $voucher->discount_type,
+            'discount_value' => (float) $voucher->discount_value,
+            'discount_amount' => $discount,
+            'subtotal' => $subtotal,
+            'total' => round($subtotal - $discount, 2),
+        ]);
+    }
+
+    private function subtotal(Cart $cart): float
+    {
+        return (float) $cart->items()->with('variant')->get()
+            ->sum(fn (CartItem $item) => $item->quantity * (float) $item->variant->price);
     }
 
     /**

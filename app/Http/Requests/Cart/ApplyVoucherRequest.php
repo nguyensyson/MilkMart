@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Cart;
 
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -16,8 +16,10 @@ class ApplyVoucherRequest extends FormRequest
      */
     public function rules(): array
     {
+        // Existence/expiry/usage-limit checks happen in VoucherService::findForApply
+        // instead of here, so each failure mode gets its own clear message.
         return [
-            'code' => ['required', 'string', 'exists:vouchers,code'],
+            'voucher_code' => ['required', 'string', 'max:50'],
         ];
     }
 }

@@ -12,6 +12,10 @@ class Voucher extends Model
 
     public $timestamps = false;
 
+    public const DISCOUNT_TYPES = ['percent', 'fixed'];
+
+    public const STATUSES = ['active', 'inactive'];
+
     protected $fillable = [
         'code',
         'discount_type',
@@ -43,5 +47,18 @@ class Voucher extends Model
     public function usages(): HasMany
     {
         return $this->hasMany(VoucherUsage::class);
+    }
+
+    /**
+     * Usages tied to a cancelled invoice don't count against the redemption
+     * limit — cancelling an order frees the voucher slot back up instead of
+     * requiring a separate "restore usage" step.
+     */
+    public function activeUsages(): HasMany
+    {
+        return $this->usages()->whereHas(
+            'invoice',
+            fn ($query) => $query->where('order_status', '!=', 'cancelled'),
+        );
     }
 }

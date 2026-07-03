@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\ProductImageController as AdminProductImageController;
 use App\Http\Controllers\Admin\ProductVariantController as AdminProductVariantController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Admin\VoucherController as AdminVoucherController;
 use App\Http\Controllers\Auth\AdminRegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\NewPasswordController;
@@ -55,6 +56,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/cart/items', [CartController::class, 'store'])->name('cart.items.store');
     Route::put('/cart/items/{item}', [CartController::class, 'update'])->name('cart.items.update');
     Route::delete('/cart/items/{item}', [CartController::class, 'destroy'])->name('cart.items.destroy');
+    Route::post('/cart/apply-voucher', [CartController::class, 'applyVoucher'])->name('cart.apply-voucher');
 
     // GET /checkout is not in the API draft table but is the Inertia page
     // needed to reach the documented POST /checkout action.
@@ -113,7 +115,12 @@ Route::middleware(['auth', 'backoffice'])->prefix('admin')->name('admin.')->grou
         Route::put('/brands/{brand}', [AdminBrandController::class, 'update'])->name('brands.update');
         Route::delete('/brands/{brand}', [AdminBrandController::class, 'destroy'])->name('brands.destroy');
 
-        Route::get('/vouchers', [AdminPlaceholderController::class, 'vouchers'])->name('vouchers.index');
+        Route::get('/vouchers', [AdminVoucherController::class, 'index'])->name('vouchers.index');
+        Route::post('/vouchers', [AdminVoucherController::class, 'store'])->name('vouchers.store');
+        Route::put('/vouchers/{voucher}', [AdminVoucherController::class, 'update'])->name('vouchers.update');
+        Route::delete('/vouchers/{voucher}', [AdminVoucherController::class, 'destroy'])->name('vouchers.destroy');
+        Route::get('/vouchers/{voucher}/usage', [AdminVoucherController::class, 'usage'])->name('vouchers.usage');
+
         Route::get('/reports', [AdminPlaceholderController::class, 'reports'])->name('reports.index');
     });
 });

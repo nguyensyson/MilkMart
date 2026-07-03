@@ -13,8 +13,10 @@ use Illuminate\Validation\ValidationException;
 
 class OrderService
 {
-    public function __construct(private readonly CartService $cartService)
-    {
+    public function __construct(
+        private readonly CartService $cartService,
+        private readonly VoucherService $voucherService,
+    ) {
     }
 
     public function checkout(User $user, string $shippingAddress, ?string $voucherCode): Invoice
@@ -40,7 +42,7 @@ class OrderService
             $subtotal = (float) $items->sum(fn (\App\Models\CartItem $item) => $item->quantity * (float) $item->variant->price);
 
             [$voucher, $discount] = $voucherCode
-                ? $this->resolveVoucher($voucherCode, $subtotal)
+                ? $this->applyVoucher($voucherCode, $subtotal)
                 : [null, 0.0];
 
             $invoice = Invoice::create([
@@ -69,6 +71,10 @@ class OrderService
             }
 
             if ($voucher) {
+                // No separate "usage count" column to increment: the count is
+                // derived from voucher_usage rows joined against non-cancelled
+                // invoices (see Voucher::activeUsages()), so cancelling this
+                // order later automatically frees the slot back up.
                 VoucherUsage::create([
                     'voucher_id' => $voucher->id,
                     'user_id' => $user->id,
@@ -131,44 +137,11 @@ class OrderService
     /**
      * @return array{0: ?Voucher, 1: float}
      */
-    private function resolveVoucher(string $code, float $subtotal): array
+    private function applyVoucher(string $code, float $subtotal): array
     {
-        $voucher = Voucher::where('code', strtoupper(trim($code)))->first();
+        $voucher = $this->voucherService->findForApply($code, $subtotal);
 
-        if (! $voucher || $voucher->status !== 'active') {
-            throw ValidationException::withMessages([
-                'voucher_code' => 'Mã voucher không hợp lệ.',
-            ]);
-        }
-
-        $now = now();
-        if (($voucher->start_date && $now->lt($voucher->start_date)) || ($voucher->end_date && $now->gt($voucher->end_date))) {
-            throw ValidationException::withMessages([
-                'voucher_code' => 'Mã voucher đã hết hạn hoặc chưa có hiệu lực.',
-            ]);
-        }
-
-        if ($voucher->min_order_value && $subtotal < (float) $voucher->min_order_value) {
-            throw ValidationException::withMessages([
-                'voucher_code' => 'Đơn hàng chưa đạt giá trị tối thiểu để áp dụng mã voucher này.',
-            ]);
-        }
-
-        if ($voucher->quantity !== null && VoucherUsage::where('voucher_id', $voucher->id)->count() >= $voucher->quantity) {
-            throw ValidationException::withMessages([
-                'voucher_code' => 'Mã voucher đã hết lượt sử dụng.',
-            ]);
-        }
-
-        $discount = $voucher->discount_type === 'percent'
-            ? $subtotal * ((float) $voucher->discount_value / 100)
-            : (float) $voucher->discount_value;
-
-        if ($voucher->max_discount) {
-            $discount = min($discount, (float) $voucher->max_discount);
-        }
-
-        return [$voucher, round(min($discount, $subtotal), 2)];
+        return [$voucher, $this->voucherService->calculateDiscount($voucher, $subtotal)];
     }
 
     /**
