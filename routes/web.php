@@ -1,7 +1,12 @@
 <?php
 
+use App\Http\Controllers\Admin\BrandController as AdminBrandController;
+use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\PlaceholderController as AdminPlaceholderController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\ProductImageController as AdminProductImageController;
+use App\Http\Controllers\Admin\ProductVariantController as AdminProductVariantController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Auth\AdminRegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -65,9 +70,33 @@ Route::middleware(['auth', 'backoffice'])->prefix('admin')->name('admin.')->grou
         Route::get('/users/{user}', [AdminUserController::class, 'show'])->name('users.show');
         Route::put('/users/{user}/status', [AdminUserController::class, 'updateStatus'])->name('users.status');
 
-        Route::get('/products', [AdminPlaceholderController::class, 'products'])->name('products.index');
-        Route::get('/categories', [AdminPlaceholderController::class, 'categories'])->name('categories.index');
-        Route::get('/brands', [AdminPlaceholderController::class, 'brands'])->name('brands.index');
+        Route::get('/products', [AdminProductController::class, 'index'])->name('products.index');
+        // create/edit are not in the API draft but are the Inertia pages
+        // needed to reach the documented store/update/variant/image actions.
+        Route::get('/products/create', [AdminProductController::class, 'create'])->name('products.create');
+        Route::post('/products', [AdminProductController::class, 'store'])->name('products.store');
+        Route::get('/products/{product}/edit', [AdminProductController::class, 'edit'])->name('products.edit');
+        Route::put('/products/{product}', [AdminProductController::class, 'update'])->name('products.update');
+        Route::delete('/products/{product}', [AdminProductController::class, 'destroy'])->name('products.destroy');
+
+        Route::post('/products/{product}/variants', [AdminProductVariantController::class, 'store'])->name('variants.store');
+        Route::put('/variants/{variant}', [AdminProductVariantController::class, 'update'])->name('variants.update');
+        Route::delete('/variants/{variant}', [AdminProductVariantController::class, 'destroy'])->name('variants.destroy');
+
+        Route::post('/variants/{variant}/images', [AdminProductImageController::class, 'store'])->name('images.store');
+        Route::delete('/images/{image}', [AdminProductImageController::class, 'destroy'])->name('images.destroy');
+        Route::put('/images/{image}/primary', [AdminProductImageController::class, 'primary'])->name('images.primary');
+
+        Route::get('/categories', [AdminCategoryController::class, 'index'])->name('categories.index');
+        Route::post('/categories', [AdminCategoryController::class, 'store'])->name('categories.store');
+        Route::put('/categories/{category}', [AdminCategoryController::class, 'update'])->name('categories.update');
+        Route::delete('/categories/{category}', [AdminCategoryController::class, 'destroy'])->name('categories.destroy');
+
+        Route::get('/brands', [AdminBrandController::class, 'index'])->name('brands.index');
+        Route::post('/brands', [AdminBrandController::class, 'store'])->name('brands.store');
+        Route::put('/brands/{brand}', [AdminBrandController::class, 'update'])->name('brands.update');
+        Route::delete('/brands/{brand}', [AdminBrandController::class, 'destroy'])->name('brands.destroy');
+
         Route::get('/vouchers', [AdminPlaceholderController::class, 'vouchers'])->name('vouchers.index');
         Route::get('/reports', [AdminPlaceholderController::class, 'reports'])->name('reports.index');
     });

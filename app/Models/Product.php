@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 class Product extends Model
 {
@@ -62,5 +63,21 @@ class Product extends Model
         return $this->hasOne(ProductVariant::class)->ofMany(['price' => 'min'], function ($query) {
             $query->where('status', 'active');
         });
+    }
+
+    /**
+     * One representative thumbnail for admin listings — the first variant
+     * image flagged as primary, regardless of which variant it belongs to.
+     */
+    public function primaryImage(): HasOneThrough
+    {
+        return $this->hasOneThrough(
+            ProductImage::class,
+            ProductVariant::class,
+            'product_id',
+            'product_variant_id',
+            'id',
+            'id',
+        )->where('is_primary', true);
     }
 }

@@ -8,21 +8,6 @@ use Inertia\Response;
 
 class PlaceholderController extends Controller
 {
-    public function products(): Response
-    {
-        return $this->render('Quản lý sản phẩm');
-    }
-
-    public function categories(): Response
-    {
-        return $this->render('Quản lý danh mục');
-    }
-
-    public function brands(): Response
-    {
-        return $this->render('Quản lý thương hiệu');
-    }
-
     public function orders(): Response
     {
         return $this->render('Quản lý đơn hàng');

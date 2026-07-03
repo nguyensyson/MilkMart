@@ -17,6 +17,10 @@ class Category extends Model
         'description',
     ];
 
+    // See Product::$hidden — same Oracle ROWNUM artifact shows up once a
+    // query combines an aggregate (withCount) with pagination.
+    protected $hidden = ['rn'];
+
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);
