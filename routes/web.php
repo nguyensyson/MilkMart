@@ -3,11 +3,13 @@
 use App\Http\Controllers\Admin\BrandController as AdminBrandController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\GoodsReceiptController as AdminGoodsReceiptController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
-use App\Http\Controllers\Admin\PlaceholderController as AdminPlaceholderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\ProductImageController as AdminProductImageController;
 use App\Http\Controllers\Admin\ProductVariantController as AdminProductVariantController;
+use App\Http\Controllers\Admin\ReportController as AdminReportController;
+use App\Http\Controllers\Admin\SupplierController as AdminSupplierController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\VoucherController as AdminVoucherController;
 use App\Http\Controllers\Auth\AdminRegisteredUserController;
@@ -78,7 +80,19 @@ Route::middleware(['auth', 'backoffice'])->prefix('admin')->name('admin.')->grou
     Route::put('/orders/{order}/payment-status', [AdminOrderController::class, 'updatePaymentStatus'])->name('orders.payment-status');
     Route::put('/orders/{order}/order-status', [AdminOrderController::class, 'updateOrderStatus'])->name('orders.order-status');
 
-    Route::get('/suppliers', [AdminPlaceholderController::class, 'suppliers'])->name('suppliers.index');
+    Route::get('/suppliers', [AdminSupplierController::class, 'index'])->name('suppliers.index');
+    Route::post('/suppliers', [AdminSupplierController::class, 'store'])->name('suppliers.store');
+    Route::put('/suppliers/{supplier}', [AdminSupplierController::class, 'update'])->name('suppliers.update');
+    Route::delete('/suppliers/{supplier}', [AdminSupplierController::class, 'destroy'])->name('suppliers.destroy');
+
+    Route::get('/goods-receipts', [AdminGoodsReceiptController::class, 'index'])->name('goods-receipts.index');
+    // create/store are Staff-only per the API draft; nested here (before the
+    // {goodsReceipt} show route below) so the literal "create" segment wins.
+    Route::middleware('staff')->group(function () {
+        Route::get('/goods-receipts/create', [AdminGoodsReceiptController::class, 'create'])->name('goods-receipts.create');
+        Route::post('/goods-receipts', [AdminGoodsReceiptController::class, 'store'])->name('goods-receipts.store');
+    });
+    Route::get('/goods-receipts/{goodsReceipt}', [AdminGoodsReceiptController::class, 'show'])->name('goods-receipts.show');
 
     Route::middleware('admin')->group(function () {
         Route::get('/register', [AdminRegisteredUserController::class, 'create'])->name('register');
@@ -121,6 +135,11 @@ Route::middleware(['auth', 'backoffice'])->prefix('admin')->name('admin.')->grou
         Route::delete('/vouchers/{voucher}', [AdminVoucherController::class, 'destroy'])->name('vouchers.destroy');
         Route::get('/vouchers/{voucher}/usage', [AdminVoucherController::class, 'usage'])->name('vouchers.usage');
 
-        Route::get('/reports', [AdminPlaceholderController::class, 'reports'])->name('reports.index');
+        Route::get('/reports', [AdminReportController::class, 'revenue'])->name('reports.index');
+        Route::get('/reports/revenue', [AdminReportController::class, 'revenue'])->name('reports.revenue');
+        Route::get('/reports/inventory', [AdminReportController::class, 'inventory'])->name('reports.inventory');
+        Route::get('/reports/best-sellers', [AdminReportController::class, 'bestSellers'])->name('reports.best-sellers');
+        Route::get('/reports/vouchers', [AdminReportController::class, 'vouchers'])->name('reports.vouchers');
+        Route::get('/reports/goods-receipts', [AdminReportController::class, 'goodsReceipts'])->name('reports.goods-receipts');
     });
 });

@@ -18,6 +18,10 @@ class GoodsReceipt extends Model
         'supplier_id',
         'created_by',
         'total_amount',
+        // $timestamps is false (no updated_at column) so this must be mass
+        // assignable — it's set explicitly on create() instead of relying on
+        // Eloquent's automatic timestamp management.
+        'created_at',
     ];
 
     protected function casts(): array

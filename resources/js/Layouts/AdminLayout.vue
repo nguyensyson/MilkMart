@@ -26,6 +26,7 @@ const menuItems = computed(() =>
         { label: 'Quản lý đơn hàng', href: '/admin/orders', adminOnly: false },
         { label: 'Quản lý voucher', href: '/admin/vouchers', adminOnly: true },
         { label: 'Quản lý nhà cung cấp', href: '/admin/suppliers', adminOnly: false },
+        { label: 'Quản lý nhập hàng', href: '/admin/goods-receipts', adminOnly: false },
         { label: 'Báo cáo & thống kê', href: '/admin/reports', adminOnly: true },
     ].filter((item) => !item.adminOnly || user.value?.role === 'Admin'),
 );

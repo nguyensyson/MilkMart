@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -49,6 +50,10 @@ class Invoice extends Model
         'payment_status',
         'order_status',
         'shipping_address',
+        // $timestamps is false (no updated_at column) so this must be mass
+        // assignable — it's set explicitly on create() instead of relying on
+        // Eloquent's automatic timestamp management.
+        'created_at',
     ];
 
     protected function casts(): array
@@ -79,5 +84,15 @@ class Invoice extends Model
     public function voucherUsage(): HasOne
     {
         return $this->hasOne(VoucherUsage::class);
+    }
+
+    /**
+     * Reports only count orders that actually represent realized revenue:
+     * paid, and not cancelled (a cancelled order may still be marked paid
+     * pending a refund, but shouldn't count as revenue).
+     */
+    public function scopeRevenueEligible(Builder $query): Builder
+    {
+        return $query->where('payment_status', 'paid')->where('order_status', '!=', 'cancelled');
     }
 }

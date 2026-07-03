@@ -56,6 +56,11 @@ class OrderService
                 'payment_status' => 'unpaid',
                 'order_status' => 'pending',
                 'shipping_address' => $shippingAddress,
+                // Invoice::$timestamps is false and the migration's useCurrent()
+                // default doesn't translate to an actual Oracle column default
+                // (yajra/laravel-oci8), so it must be set explicitly here or
+                // every invoice ends up with a NULL created_at.
+                'created_at' => now(),
             ]);
 
             foreach ($items as $item) {
