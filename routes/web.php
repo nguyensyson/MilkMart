@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\BrandController as AdminBrandController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\PlaceholderController as AdminPlaceholderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\ProductImageController as AdminProductImageController;
@@ -16,7 +17,7 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -26,8 +27,6 @@ Route::get('/products', [ProductController::class, 'index'])->name('products.ind
 Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
 Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
 Route::get('/brands', [BrandController::class, 'index'])->name('brands.index');
-Route::get('/cart', [CartController::class, 'show'])->name('cart.show');
-Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices.index')->middleware('auth');
 
 Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
@@ -51,6 +50,19 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    Route::get('/cart', [CartController::class, 'show'])->name('cart.show');
+    Route::post('/cart/items', [CartController::class, 'store'])->name('cart.items.store');
+    Route::put('/cart/items/{item}', [CartController::class, 'update'])->name('cart.items.update');
+    Route::delete('/cart/items/{item}', [CartController::class, 'destroy'])->name('cart.items.destroy');
+
+    // GET /checkout is not in the API draft table but is the Inertia page
+    // needed to reach the documented POST /checkout action.
+    Route::get('/checkout', [OrderController::class, 'create'])->name('checkout.create');
+    Route::post('/checkout', [OrderController::class, 'store'])->name('checkout.store');
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+    Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
 });
 
 // Backoffice shell (Admin + Staff): dashboard plus the modules docs mark as
@@ -59,7 +71,11 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'backoffice'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-    Route::get('/orders', [AdminPlaceholderController::class, 'orders'])->name('orders.index');
+    Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
+    Route::put('/orders/{order}/payment-status', [AdminOrderController::class, 'updatePaymentStatus'])->name('orders.payment-status');
+    Route::put('/orders/{order}/order-status', [AdminOrderController::class, 'updateOrderStatus'])->name('orders.order-status');
+
     Route::get('/suppliers', [AdminPlaceholderController::class, 'suppliers'])->name('suppliers.index');
 
     Route::middleware('admin')->group(function () {

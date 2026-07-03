@@ -14,6 +14,30 @@ class Invoice extends Model
 
     public $timestamps = false;
 
+    public const ORDER_STATUSES = ['pending', 'confirmed', 'shipping', 'completed', 'cancelled'];
+
+    public const PAYMENT_STATUSES = ['unpaid', 'paid', 'refunded'];
+
+    /**
+     * Customer self-service cancellation is only allowed before the order
+     * has been handed off for shipping.
+     */
+    public const CANCELLABLE_STATUSES = ['pending', 'confirmed'];
+
+    /**
+     * Admin/staff order_status changes must follow this forward-only flow;
+     * completed/cancelled are terminal.
+     *
+     * @var array<string, array<int, string>>
+     */
+    public const STATUS_TRANSITIONS = [
+        'pending' => ['confirmed', 'cancelled'],
+        'confirmed' => ['shipping', 'cancelled'],
+        'shipping' => ['completed', 'cancelled'],
+        'completed' => [],
+        'cancelled' => [],
+    ];
+
     protected $fillable = [
         'invoice_code',
         'user_id',

@@ -8,11 +8,6 @@ use Inertia\Response;
 
 class PlaceholderController extends Controller
 {
-    public function orders(): Response
-    {
-        return $this->render('Quản lý đơn hàng');
-    }
-
     public function vouchers(): Response
     {
         return $this->render('Quản lý voucher');

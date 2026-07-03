@@ -1,7 +1,8 @@
 <script setup>
 import CustomerLayout from '@/Layouts/CustomerLayout.vue';
 import { formatCurrency } from '@/utils/currency';
-import { computed, ref } from 'vue';
+import { router, usePage } from '@inertiajs/vue3';
+import { computed, ref, watch } from 'vue';
 
 const props = defineProps({
     product: {
@@ -14,12 +15,62 @@ const props = defineProps({
     },
 });
 
+const page = usePage();
 const selectedVariantId = ref(props.variants[0]?.id);
 const activeImageIndex = ref(0);
+const quantity = ref(1);
+const adding = ref(false);
 
 const selectedVariant = computed(
     () => props.variants.find((variant) => variant.id === selectedVariantId.value) ?? props.variants[0],
 );
+
+const maxQuantity = computed(() => selectedVariant.value?.stock_quantity ?? 0);
+
+watch(selectedVariantId, () => {
+    quantity.value = 1;
+});
+
+watch(quantity, (value) => {
+    if (Number.isNaN(value) || value < 1) {
+        quantity.value = 1;
+    } else if (value > maxQuantity.value) {
+        quantity.value = maxQuantity.value;
+    }
+});
+
+function decrementQuantity() {
+    if (quantity.value > 1) {
+        quantity.value -= 1;
+    }
+}
+
+function incrementQuantity() {
+    if (quantity.value < maxQuantity.value) {
+        quantity.value += 1;
+    }
+}
+
+function addToCart() {
+    if (!selectedVariant.value || !inStock.value || adding.value) {
+        return;
+    }
+
+    adding.value = true;
+    router.post(
+        '/cart/items',
+        {
+            variant_id: selectedVariant.value.id,
+            quantity: quantity.value,
+        },
+        {
+            preserveScroll: true,
+            onFinish: () => {
+                adding.value = false;
+            },
+        },
+    );
+}
 
 const gallery = computed(() => {
     const variant = selectedVariant.value;
@@ -89,6 +140,45 @@ function variantLabel(variant) {
                 >
                     {{ inStock ? `Còn hàng (${selectedVariant.stock_quantity})` : 'Hết hàng' }}
                 </span>
+
+                <div v-if="inStock" class="mt-6">
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center rounded border border-gray-300">
+                            <button
+                                type="button"
+                                class="px-3 py-2 text-gray-600 hover:bg-gray-50 disabled:opacity-40"
+                                :disabled="quantity <= 1"
+                                @click="decrementQuantity"
+                            >
+                                −
+                            </button>
+                            <input
+                                v-model.number="quantity"
+                                type="number"
+                                min="1"
+                                :max="maxQuantity"
+                                class="w-14 border-x border-gray-300 py-2 text-center text-sm focus:outline-none"
+                            />
+                            <button
+                                type="button"
+                                class="px-3 py-2 text-gray-600 hover:bg-gray-50 disabled:opacity-40"
+                                :disabled="quantity >= maxQuantity"
+                                @click="incrementQuantity"
+                            >
+                                +
+                            </button>
+                        </div>
+                        <button
+                            type="button"
+                            class="rounded bg-emerald-600 px-6 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+                            :disabled="adding"
+                            @click="addToCart"
+                        >
+                            {{ adding ? 'Đang thêm...' : 'Thêm vào giỏ' }}
+                        </button>
+                    </div>
+                    <p v-if="page.props.errors?.quantity" class="mt-2 text-sm text-red-600">{{ page.props.errors.quantity }}</p>
+                </div>
 
                 <div v-if="variants.length > 1" class="mt-6">
                     <p class="mb-2 text-sm font-medium text-gray-700">Phân loại</p>

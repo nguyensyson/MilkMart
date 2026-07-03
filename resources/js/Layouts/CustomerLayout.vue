@@ -13,6 +13,7 @@ const page = usePage();
 const user = computed(() => page.props.auth.user);
 const successMessage = computed(() => page.props.flash?.success);
 const errorMessage = computed(() => page.props.flash?.error);
+const cartCount = computed(() => page.props.cart?.count ?? 0);
 </script>
 
 <template>
@@ -22,10 +23,18 @@ const errorMessage = computed(() => page.props.flash?.error);
                 <Link href="/" class="text-lg font-bold text-emerald-600">MilkMart</Link>
                 <div class="flex items-center gap-6 text-sm text-gray-600">
                     <Link href="/products">Sản phẩm</Link>
-                    <Link href="/cart">Giỏ hàng</Link>
+                    <Link href="/cart" class="relative">
+                        Giỏ hàng
+                        <span
+                            v-if="cartCount > 0"
+                            class="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-emerald-600 px-1 text-xs font-semibold text-white"
+                        >
+                            {{ cartCount }}
+                        </span>
+                    </Link>
 
                     <template v-if="user">
-                        <Link href="/invoices">Đơn hàng</Link>
+                        <Link href="/orders">Đơn hàng</Link>
                         <Link href="/profile" class="text-gray-400 hover:text-emerald-600">{{ user.fullname || user.email }}</Link>
                         <Link href="/logout" method="post" as="button" class="text-gray-600 hover:text-emerald-600">
                             Đăng xuất

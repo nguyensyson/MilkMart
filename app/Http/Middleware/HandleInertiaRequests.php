@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\CartItem;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -50,6 +51,11 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
+            ],
+            'cart' => [
+                'count' => fn () => $user
+                    ? (int) CartItem::whereHas('cart', fn ($query) => $query->where('user_id', $user->id))->sum('quantity')
+                    : 0,
             ],
         ];
     }
