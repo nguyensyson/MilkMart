@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -17,10 +18,18 @@ class DatabaseSeeder extends Seeder
         Role::firstOrCreate(['name' => 'Staff'], ['description' => 'Nhân viên bán hàng/kho']);
         Role::firstOrCreate(['name' => 'Customer'], ['description' => 'Khách hàng mua sắm']);
 
-        User::factory()->create([
-            'role_id' => $adminRole->id,
-            'fullname' => 'MilkMart Admin',
-            'email' => 'admin@milkmart.local',
+        User::updateOrCreate(
+            ['email' => 'admin@milkmart.local'],
+            [
+                'role_id' => $adminRole->id,
+                'fullname' => 'MilkMart Admin',
+                'password_hash' => Hash::make('password'),
+                'status' => 'active',
+            ]
+        );
+
+        $this->call([
+            ProductSeeder::class,
         ]);
     }
 }
