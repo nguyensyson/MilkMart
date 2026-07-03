@@ -29,7 +29,7 @@ class ReportController extends Controller
      * The schema has no per-variant reorder-threshold column, so a single
      * store-wide threshold stands in for it.
      */
-    private const LOW_STOCK_THRESHOLD = 10;
+    private const LOW_STOCK_THRESHOLD = 100;
 
     public function revenue(Request $request): Response
     {

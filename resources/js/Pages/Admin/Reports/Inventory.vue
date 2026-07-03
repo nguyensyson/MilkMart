@@ -16,7 +16,7 @@ const props = defineProps({
     },
     lowStockThreshold: {
         type: Number,
-        default: 10,
+        default: 100,
     },
     categories: {
         type: Array,

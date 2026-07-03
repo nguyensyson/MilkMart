@@ -18,6 +18,7 @@ class UserController extends Controller
         $search = trim((string) $request->query('search', ''));
         $roleId = $request->query('role_id') ?: null;
         $status = $request->query('status') ?: null;
+        $neverOrdered = $request->boolean('never_ordered');
 
         $users = User::query()
             ->with('role')
@@ -29,6 +30,10 @@ class UserController extends Controller
             })
             ->when($roleId, fn ($query) => $query->where('role_id', $roleId))
             ->when($status, fn ($query) => $query->where('status', $status))
+            ->when($neverOrdered, function ($query) {
+                $query->whereDoesntHave('invoices')
+                    ->whereHas('role', fn ($query) => $query->whereNotIn('name', ['Admin', 'Staff']));
+            })
             ->orderBy('fullname')
             ->paginate(15)
             ->withQueryString();
@@ -40,6 +45,7 @@ class UserController extends Controller
                 'search' => $search,
                 'role_id' => $roleId,
                 'status' => $status,
+                'never_ordered' => $neverOrdered,
             ],
         ]);
     }

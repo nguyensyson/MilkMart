@@ -21,6 +21,7 @@ const props = defineProps({
 const search = ref(props.filters.search ?? '');
 const roleId = ref(props.filters.role_id ?? '');
 const status = ref(props.filters.status ?? '');
+const neverOrdered = ref(Boolean(props.filters.never_ordered));
 
 function applyFilters() {
     router.get(
@@ -29,6 +30,7 @@ function applyFilters() {
             search: search.value || undefined,
             role_id: roleId.value || undefined,
             status: status.value || undefined,
+            never_ordered: neverOrdered.value ? 1 : undefined,
         },
         { preserveState: true, replace: true },
     );
@@ -80,6 +82,18 @@ function applyFilters() {
                     <option value="active">Đang hoạt động</option>
                     <option value="locked">Đã khóa</option>
                 </select>
+            </div>
+            <div class="flex items-center gap-2 pb-2">
+                <input
+                    id="never_ordered"
+                    v-model="neverOrdered"
+                    type="checkbox"
+                    class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                    @change="applyFilters"
+                />
+                <label for="never_ordered" class="text-sm font-medium text-gray-700">
+                    Chỉ hiện người dùng chưa có đơn hàng
+                </label>
             </div>
             <button
                 type="button"
